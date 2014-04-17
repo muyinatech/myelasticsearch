@@ -1,11 +1,12 @@
 package muyinatech.myelasticsearch;
 
+import com.google.gson.Gson;
+import muyinatech.myelasticsearch.model.GuestPost;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.search.SearchHit;
@@ -25,24 +26,22 @@ public class SimpleElasticSearch {
         Node node = nodeBuilder().node();
         Client client = node.client();
 
+        createDocument(client, "1", new GuestPost("Fred", "UK", "Hello my friend.", new Date()));
+        createDocument(client, "2", new GuestPost("Sarah", "USA", "Hi nice to visit.", new Date()));
+        createDocument(client, "3", new GuestPost("Billy", "France", "Bonjour!", new Date()));
+
        // readIndex(client, "twitter", "tweet", "3");
-        searchDocument(client, "twitter", "tweet", "user", "kimchy");
+      //  searchDocument(client, "twitter", "tweet", "user", "kimchy");
        // deleteDocument(client, "twitter", "tweet", "3" );
 
         // on shutdown
         node.close();
     }
 
-    private static void createIndex(Client client)  throws IOException {
+    private static void createDocument(Client client, String id, GuestPost guestPost)  throws IOException {
 
-        client.prepareIndex("twitter", "tweet", "4")
-                .setSource(XContentFactory.jsonBuilder()
-                        .startObject()
-                        .field("user", "kimchy")
-                        .field("postDate", new Date())
-                        .field("message", "trying out Elasticsearch")
-                        .endObject()
-                )
+        client.prepareIndex("guestbook", "post", id)
+                .setSource(new Gson().toJson(guestPost))
                 .execute()
                 .actionGet();
     }
